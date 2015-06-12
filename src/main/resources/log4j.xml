@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<!--
+Note that an JVM property property is used in this log4j.xml file, ${log.dir}
+
+Some patterns that could be useful as inspired from Peter A. Darnell and Philip E. Margolis' highly recommended book "C - a Software Engineering Approach", ISBN 0-387-97389-3 
+
+%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p - %C{1}:%L: %m%n
+    Simple format that uses EnchancedPatternLayout to include line numbers
+
+%r [%t] %-5p %c %x - %m%n
+    This is essentially the TTCC layout.
+
+%-6r [%15.15t] %-5p %30.30c %x - %m%n
+    Similar to the TTCC layout except that the relative time is right padded if less than 6 digits,
+    thread name is right padded if less than 15 characters and truncated if longer and the category
+    name is left padded if shorter than 30 characters and truncated if longer.
+
+For more details of this file format and content please refer to http://wiki.apache.org/logging-log4j/Log4jXmlFormat
+-->
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+    <appender name="productionLog" class="org.apache.log4j.DailyRollingFileAppender">
+        <param name="file" value="${log.dir}/api-example.log" />
+        <!-- specify whether to use write cache (buffer) or not; if set to false, logs are written immeidately.-->
+        <param name="bufferedIO" value="false" />
+        <!-- size of IO buffer, when writing to file, recommended for production -->
+        <param name="bufferSize" value="16384" />
+        <!-- date pattern controls the roll-over not the date format -->
+        <param name="datePattern" value="'.'yyyy-MM-dd"/>
+        <param name="append" value="true" />
+        <layout class="org.apache.log4j.EnhancedPatternLayout">
+            <param name="ConversionPattern" value="%-6r %d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %-5p
+                %C{1}:%L - %m%n %throwable" />
+        </layout>
+    </appender>
+
+    <appender name="consoleLog" class="org.apache.log4j.ConsoleAppender">
+        <layout class="org.apache.log4j.EnhancedPatternLayout">
+            <param name="ConversionPattern" value="%-6r %d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %-5p
+                %C{1}:%L - %m%n %throwable" />
+        </layout>
+    </appender>
+
+    <!-- app specific logs -->
+
+    <logger name="com.macyves" additivity="false">
+        <!-- this is the log for the purger -->
+        <!-- TRACE, DEBUG, INFO, WARN, ERROR or FATAL -->
+        <level value="INFO"/>
+        <appender-ref ref="consoleLog"/>
+    </logger>
+
+    <!-- log levels for included packages -->
+
+    <logger name="org.apache.http" additivity="false">
+        <!-- TRACE, DEBUG, INFO, WARN, ERROR or FATAL -->
+        <level value="INFO"/>
+        <appender-ref ref="consoleLog"/>
+    </logger>
+
+    <logger name="org.apache.http.wire" additivity="false">
+        <!-- TRACE, DEBUG, INFO, WARN, ERROR or FATAL -->
+        <level value="INFO"/>
+        <appender-ref ref="consoleLog"/>
+    </logger>
+
+    <logger name="org.eclipse.jetty" additivity="false">
+        <!-- TRACE, DEBUG, INFO, WARN, ERROR or FATAL -->
+        <level value="INFO"/>
+        <appender-ref ref="consoleLog"/>
+    </logger>
+
+    <logger name="com.sun.jersey" additivity="false">
+        <!-- TRACE, DEBUG, INFO, WARN, ERROR or FATAL -->
+        <level value="WARN"/>
+        <appender-ref ref="consoleLog"/>
+    </logger>
+
+    <logger name="org.springframework" additivity="false">
+        <!-- TRACE, DEBUG, INFO, WARN, ERROR or FATAL -->
+        <level value="WARN"/>
+        <appender-ref ref="consoleLog"/>
+    </logger>
+
+    <!-- root log level -->
+    <root>
+        <!-- TRACE, DEBUG, INFO, WARN, ERROR or FATAL -->
+        <priority value="INFO" />
+        <appender-ref ref="consoleLog"/>
+    </root>
+</log4j:configuration>
+

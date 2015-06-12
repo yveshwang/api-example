@@ -1,0 +1,131 @@
+buildscript {
+  repositories {
+    jcenter()
+  }
+
+  dependencies {
+    classpath 'org.akhikhl.gretty:gretty:1.1.8'
+  }
+}
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+apply plugin: 'java'
+apply plugin: 'war'
+apply plugin: 'org.akhikhl.gretty'
+apply plugin: 'eclipse'
+apply plugin: 'findbugs'
+
+dependencies {
+    compile 'org.mongodb:mongo-java-driver:2.11.2'
+    compile 'com.google.code.morphia:morphia:0.104'
+    compile 'javax.servlet:javax.servlet-api:3.0.1'
+    compile 'com.sun.jersey:jersey-server:1.8'
+    compile 'com.sun.jersey:jersey-core:1.8'
+    compile 'com.sun.jersey.contribs:jersey-multipart:1.8'
+    compile 'org.json:json:20140107'
+    compile 'com.google.inject:guice:2.0'
+    compile 'org.mongodb:mongo-java-driver:2.11.2'
+    compile 'com.google.code.morphia:morphia:0.104'
+    compile 'org.apache.httpcomponents:httpclient:4.3.2'
+    compile 'org.apache.httpcomponents:httpmime:4.3.2'
+    compile 'commons-codec:commons-codec:1.9'
+    compile 'org.apache.commons:commons-lang3:3.1'
+    compile 'log4j:log4j:1.2.17'
+
+    runtime 'org.mongodb:mongo-java-driver:2.11.2'
+    runtime 'com.google.code.morphia:morphia:0.104'
+    runtime 'javax.servlet:javax.servlet-api:3.0.1'
+    runtime 'com.sun.jersey:jersey-server:1.8'
+    runtime 'com.sun.jersey:jersey-core:1.8'
+    runtime 'com.sun.jersey.contribs:jersey-multipart:1.8'
+    runtime 'org.json:json:20140107'
+    runtime 'com.google.inject:guice:2.0'
+    runtime 'org.mongodb:mongo-java-driver:2.11.2'
+    runtime 'com.google.code.morphia:morphia:0.104'
+    runtime 'org.apache.httpcomponents:httpclient:4.3.2'
+    runtime 'org.apache.httpcomponents:httpmime:4.3.2'
+    runtime 'commons-codec:commons-codec:1.9'
+    runtime 'org.apache.commons:commons-lang3:3.1'
+    runtime 'log4j:log4j:1.2.17'
+
+    testCompile 'junit:junit:4.11'
+    testCompile 'org.mockito:mockito-all:1.10.8'
+    testCompile 'net.jodah:typetools:0.3.1'
+
+    testRuntime 'junit:junit:4.11'
+    testRuntime 'org.mockito:mockito-all:1.10.8'
+    testRuntime 'net.jodah:typetools:0.3.1'
+}
+
+compileJava {
+    options.fork = false
+    options.encoding = 'UTF-8'
+    options.compilerArgs << "-Xlint:all" << "-Werror"
+    sourceCompatibility = '1.7'
+    targetCompatibility = '1.7'
+}
+task javaSettings << {task -> 
+    println "$task.project.name" 
+    println "fork=$task.project.compileJava.options.fork"
+    println "encoding=$task.project.compileJava.options.encoding"
+    println "source=$task.project.compileJava.sourceCompatibility"
+    println "target=$task.project.compileJava.targetCompatibility"
+}
+
+test {
+    include 'com/macyves/unit/**/*Test.class'
+    include 'com/macyves/unit/**/*Tests.class'
+    exclude '**/*BaseTests.class'
+    exclude '**/*BaseTest.class'
+    exclude '**/*TestBase.class'
+}
+
+task integrationTest(type:Test, dependsOn:testClasses) {
+    include 'com/macyves/integration/**/*Test.class'
+    include 'com/macyves/integration/**/*Tests.class'
+    exclude '**/*BaseTests.class'
+    exclude '**/*BaseTest.class'
+    exclude '**/*TestBase.class'
+    beforeSuite { descriptor ->
+        println "integration test can be configured as such:"
+        println "gradle integrationTest -Dcom.macyves.mongo.host=localhost -Dcom.macyves.mongo.port=27017 -Dcom.macyves.mongo.db=testdb"
+        //check and set the JVM options
+        if( System.properties['com.macyves.mongo.host'] != null ) {
+            systemProperties['com.macyves.mongo.host'] = System.properties['com.macyves.mongo.host']
+        }
+        if( System.properties['com.macyves.mongo.port'] != null ) {
+            systemProperties['com.macyves.mongo.port'] = System.properties['com.macyves.mongo.port']
+        }
+        if( System.properties['com.macyves.mongo.db'] != null ) {
+            systemProperties['com.macyves.mongo.db'] = System.properties['com.macyves.mongo.db']
+        }
+    }
+}
+
+classes.dependsOn javaSettings
+
+gretty {
+    integrationTestTask = 'integrationTest' // name of existing gradle task
+    port = 8888
+    contextPath = '/'
+    // available servlet container, jetty7, jetty8, jetty9, tomcat7, tomcat8
+    servletContainer = 'jetty8'
+    jvmArgs = ['-Dcom.macyves.mongo.db=api_test']
+    managedClassReload = true
+    scanInterval = 1
+}
+
+war {
+    excludes = ['.gradle/', 'dist/', 'app/']
+}
+
+tasks.withType(FindBugs) {
+    reports {
+        xml.enabled = false
+        html.enabled = true
+    }
+}
