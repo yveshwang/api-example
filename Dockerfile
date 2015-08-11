@@ -28,7 +28,7 @@ RUN apt-get install -y apt-utils
 RUN apt-get install -y wget
 
 # Install Jetty
-ENV JETTY_VERSION 8.1.16.v20140903
+ENV JETTY_VERSION 8.1.17.v20150415
 
 RUN wget http://download.eclipse.org/jetty/${JETTY_VERSION}/dist/jetty-distribution-${JETTY_VERSION}.zip -O /tmp/jetty.zip
 RUN apt-get install -y unzip
